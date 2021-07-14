@@ -42,10 +42,13 @@ export default class Service {
     }
 
     static async find(filter = {}, include = []) {
-        console.log('find');
         let self = this;
-        const { where = {}, skip = 0, limit = 25 } = filter;
-        let items = self.model.find(where).skip(+skip).limit(+limit);
+        const { where = {}, skip, limit, sort } = filter;
+
+        let items = self.model.find(where);
+        if (sort) items.sort(sort);
+        if (skip) items.skip(+skip);
+        if (limit) items.limit(+limit); // limit || 25
 
         items = __populateIncludes(items, self.relations, include);
         items = await items.exec();
@@ -58,11 +61,13 @@ export default class Service {
     }
 
     static async count(filter = {}) {
-        const { where = {}, skip = 0, limit = 25 } = filter;
-        console.log(where);
-        const count = await this.model.countDocuments(where).skip(+skip).limit(+limit);
-        
-        console.log(count);
+        const { where = {}, skip, limit } = filter;
+
+        let count = this.model.countDocuments(where);
+        if (skip) count.skip(+skip);
+        if (limit) count.limit(+limit); // limit || 25
+        count = await count.exec();
+
         return count;
     }
 
