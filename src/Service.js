@@ -42,7 +42,7 @@ export default class Service {
     }
 
     static async find(filter = {}, include = []) {
-        console.log('find');
+        if (this.beforeFind) await this.beforeFind(filter, include);
         let self = this;
         const { where = {}, skip = 0, limit = 25 } = filter;
         let items = self.model.find(where).skip(+skip).limit(+limit);
@@ -50,14 +50,18 @@ export default class Service {
         items = __populateIncludes(items, self.relations, include);
         items = await items.exec();
 
-        return _.map(items, item => __includePostprocessing(
+        let res = _.map(items, item => __includePostprocessing(
             new self( item.toObject() ),
             self.relations,
             include
         ));
+
+        if (this.afterFind) await this.afterFind(res);
+        return res;
     }
 
     static async count(filter = {}) {
+        if (this.beforeFind) await this.beforeFind(filter, include);
         const { where = {}, skip = 0, limit = 25 } = filter;
         console.log(where);
         const count = await this.model.countDocuments(where).skip(+skip).limit(+limit);
@@ -84,6 +88,7 @@ export default class Service {
     }
 
     static async findOne(filter = {}, include = []) {
+        if (this.beforeFind) await this.beforeFind(filter, include);
         let self = this;
         
         let item = self.model.findOne(filter);
@@ -93,11 +98,14 @@ export default class Service {
         // if the request did not find anything, return null and do not continue processing
         if (!item) return null;
 
-        return __includePostprocessing(
+        let res = __includePostprocessing(
             new self( item.toObject() ),
             self.relations,
             include
         );
+
+        if (this.afterFind) await this.afterFind(res);
+        return res;
     }
 
     static async findById(id, include=[]) {
@@ -165,6 +173,7 @@ export default class Service {
     }
 
     static async exists(filter) {
+        if (this.beforeFind) await this.beforeFind(filter, include);
         return this.model.exists(filter);
     }
 
