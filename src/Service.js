@@ -80,7 +80,7 @@ export default class Service {
         if (this.beforeDelete) await this.beforeDelete(id);
         const res = await this.model.findByIdAndDelete(id);
 
-        if (this.afterDelete) await this.afterDelete(id, res);
+        if (this.afterDelete) await this.afterDelete({ _id: id }, res ? [ res ] : []);
 
         return res;
     }
@@ -135,7 +135,7 @@ export default class Service {
         if (this.beforeDelete) await this.beforeDelete(filter, options);
         const res = await this.model.findOneAndDelete(filter, options);
 
-        if (this.afterDelete) await this.afterDelete(filter, res);
+        if (this.afterDelete) await this.afterDelete(filter, res ? [ res ] : []);
 
         return res;
     }
@@ -186,9 +186,15 @@ export default class Service {
     static async deleteMany(filter = {}, options = {}) {
         if (this.beforeDelete) await this.beforeDelete(filter, options);
 
-        const res = await this.model.deleteMany(filter, options);
+        let res = [];
+        if (this.afterDelete) {
+            res = await this.model.find(filter);
 
-        if (this.afterDelete) await this.afterDelete(filter, res);
+            await this.model.deleteMany(filter, options);
+            await this.afterDelete(filter, res);
+        } else {
+            res = await this.model.deleteMany(filter, options);
+        }
 
         return res;
     }
@@ -198,7 +204,7 @@ export default class Service {
 
         const res = await this.model.deleteOne(filter, options);
 
-        if (this.afterDelete) await this.afterDelete(filter, res);
+        if (this.afterDelete) await this.afterDelete(filter, res ? [ res ] : res);
         return res;
     }
 
