@@ -78,7 +78,7 @@ export default class Service {
 
     static async findByIdAndDelete(id, options = {}) {
         if (this.beforeDelete) await this.beforeDelete(id);
-        const res = await this.model.findByIdAndDelete(id);
+        const res = await this.model.findByIdAndDelete(id, options);
 
         if (this.afterDelete) await this.afterDelete({ _id: id }, res ? [ res ] : []);
 
@@ -161,7 +161,7 @@ export default class Service {
         
         let item;
         try {
-            item = await this.model.create(data);
+            item = await this.model.create(data, options);
         } catch (e) {
             console.log("class (line : 147) | create | e : ", e);
             throw e;
