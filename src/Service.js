@@ -161,7 +161,11 @@ export default class Service {
         
         let item;
         try {
-            item = await this.model.create(data, options);
+            item = await this.model.create(
+                // To specify options, docs must be an array, not a spread
+                _.isArray(data) ? data : [ data ],
+                options
+            );
         } catch (e) {
             console.log("class (line : 147) | create | e : ", e);
             throw e;
