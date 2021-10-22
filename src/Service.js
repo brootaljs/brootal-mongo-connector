@@ -161,11 +161,16 @@ export default class Service {
         
         let item;
         try {
-            item = await this.model.create(
+            // create is universal method and its usage depends on 'data' type
+            // Model.create({}) expected return type is Object
+            // Model.create([{}]) expected return type is Array
+            if (_.isArray(data)) {
+                item = await this.model.create(data, options);
+            } else {
                 // To specify options, docs must be an array, not a spread
-                _.isArray(data) ? data : [ data ],
-                options
-            );
+                item = await this.model.create([ data ], options);
+                item = item[0];
+            }
         } catch (e) {
             console.log("class (line : 147) | create | e : ", e);
             throw e;
