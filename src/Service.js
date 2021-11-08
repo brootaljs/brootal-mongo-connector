@@ -78,6 +78,7 @@ export default class Service {
 
     static async findByIdAndDelete(id, options = {}) {
         if (this.beforeDelete) await this.beforeDelete(id);
+
         const res = await this.model.findByIdAndDelete(id, options);
 
         if (this.afterDelete) await this.afterDelete({ _id: id }, res ? [ res ] : []);
@@ -87,7 +88,9 @@ export default class Service {
 
     static async findByIdAndUpdate(id, data = {}, options = {}) {
         if (this.beforeEdit) data = await this.beforeEdit(id, data, options);
+
         const res = await this.model.findByIdAndUpdate(id, data, options);
+
         if (this.afterEdit) await this.afterEdit(id, res);
 
         return res;
@@ -133,6 +136,7 @@ export default class Service {
 
     static async findOneAndDelete(filter = {}, options = {}) {
         if (this.beforeDelete) await this.beforeDelete(filter, options);
+
         const res = await this.model.findOneAndDelete(filter, options);
 
         if (this.afterDelete) await this.afterDelete(filter, res ? [ res ] : []);
@@ -142,7 +146,9 @@ export default class Service {
 
     static async findOneAndUpdate(filter = {}, data={}, options = {}) {
         if (this.beforeEdit) data = await this.beforeEdit(filter, data, options);
+        
         const res = await this.model.findOneAndUpdate(filter, data, options);
+        
         if (this.afterEdit) await this.afterEdit(filter, res);
 
         return res;
@@ -150,7 +156,9 @@ export default class Service {
 
     static async findOneAndReplace(filter = {}, data={}, options = {}) {
         if (this.beforeEdit) data = await this.beforeEdit(filter, data, options);
+
         const res = await this.model.findOneAndReplace(filter, data, options);
+
         if (this.afterEdit) await this.afterEdit(filter, res);
 
         return res;
@@ -217,21 +225,22 @@ export default class Service {
         return res;
     }
 
-    static async updateMany(filter = {}, data, options) {
+    static async updateMany(filter = {}, data, options = {}) {
         if (this.beforeEdit) data = await this.beforeEdit(filter, data, options);
         if (!data) return { nModified: 0};
 
         const res = await this.model.updateMany(filter, data, options);
+
         if (this.afterEdit) await this.afterEdit(filter, res);
 
         return res;
     }
 
-    async save(options) {
+    async save(options = {}) {
         return this.constructor.model.findByIdAndUpdate(this._id, this, options);
     }
 
-    async delete(options) {
+    async delete(options = {}) {
         return this.constructor.model.findByIdAndDelete(this._id, options);
     }
 }
